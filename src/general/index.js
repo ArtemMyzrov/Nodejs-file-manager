@@ -31,12 +31,6 @@ rl.on('line', (input) => {
   if (input !== '.exit') {
     console.log('Invalid command. Please enter a valid command.')
   }
-  if (parentDirectory !== rootDirectory) {
-    process.chdir(parentDirectory)
-    console.log(`You are currently in ${process.cwd()}`)
-  } else {
-    console.log('Cannot navigate above the root directory.')
-  }
 
   rl.prompt()
 })
