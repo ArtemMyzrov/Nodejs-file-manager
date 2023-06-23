@@ -1,15 +1,11 @@
 import readline from 'readline'
+import { handleCommand } from '../nwd/index.js'
 
 const args = process.argv.slice(2)
 const usernameArg = args.find((arg) => arg.startsWith('--username='))
 const username = usernameArg ? usernameArg.split('=')[1] : 'develop'
 console.log(`Welcome to the File Manager, ${username}!`)
 console.log(`You are currently in ${process.cwd()}`)
-
-process.on('SIGINT', () => {
-  console.log(`Thank you for using File Manager, ${username}, goodbye!`)
-  process.exit()
-})
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -26,15 +22,13 @@ rl.on('line', (input) => {
     console.log(`Thank you for using File Manager, ${username}, goodbye!`)
     rl.close()
   } else {
-    console.log(`Entered command: ${input}`)
-  }
-  if (input !== '.exit') {
-    console.log('Invalid command. Please enter a valid command.')
+    handleCommand(input)
   }
 
   rl.prompt()
 })
 
 rl.on('close', () => {
+  console.log(`Thank you for using File Manager, ${username}, goodbye!`)
   process.exit()
 })
