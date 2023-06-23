@@ -1,0 +1,21 @@
+{
+  "name": "nodejs-file-manager-",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/general/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArtemMyzrov/Nodejs-file-manager-.git"
+  },
+  "author": "MzArtem",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ArtemMyzrov/Nodejs-file-manager-/issues"
+  },
+  "homepage": "https://github.com/ArtemMyzrov/Nodejs-file-manager-#readme"
+}
