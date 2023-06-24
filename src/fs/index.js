@@ -29,54 +29,82 @@ export function fsCommand(input) {
   }
 }
 
-function readFile(filePath) {
+async function readFile(filePath) {
   try {
-    const content = fs.readFileSync(filePath, 'utf-8')
+    const content = await new Promise((resolve, reject) => {
+      fs.readFile(filePath, 'utf-8', (error, data) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(data)
+        }
+      })
+    })
     console.log(`Content of ${filePath}:\n${content}`)
   } catch (error) {
     console.log(`Error reading file: ${error.message}`)
   }
 }
 
-function createFile(fileName) {
+async function createFile(fileName) {
   try {
-    fs.writeFileSync(fileName, '')
+    await new Promise((resolve, reject) => {
+      fs.writeFile(fileName, '', (error) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve()
+        }
+      })
+    })
     console.log(`Created file: ${fileName}`)
   } catch (error) {
     console.log(`Error creating file: ${error.message}`)
   }
 }
 
-function renameFile(oldPath, newPath) {
+async function renameFile(oldPath, newPath) {
   try {
-    if (fs.existsSync(oldPath)) {
-      fs.renameSync(oldPath, newPath)
-      console.log(`Renamed file: ${oldPath} -> ${newPath}`)
-    } else {
-      console.log(`File not found: ${oldPath}`)
-    }
+    await new Promise((resolve, reject) => {
+      fs.rename(oldPath, newPath, (error) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve()
+        }
+      })
+    })
+    console.log(`Renamed file: ${oldPath} -> ${newPath}`)
   } catch (error) {
     console.log(`Error renaming file: ${error.message}`)
   }
 }
 
-function copyFile(sourcePath, targetPath) {
-  const readStream = fs.createReadStream(sourcePath)
-  const writeStream = fs.createWriteStream(targetPath)
+async function copyFile(sourcePath, targetPath) {
+  try {
+    const readStream = fs.createReadStream(sourcePath)
+    const writeStream = fs.createWriteStream(targetPath)
 
-  readStream.on('error', (error) => {
-    console.log(`Error reading file: ${error.message}`)
-  })
+    await new Promise((resolve, reject) => {
+      readStream.pipe(writeStream)
 
-  writeStream.on('error', (error) => {
-    console.log(`Error writing file: ${error.message}`)
-  })
+      readStream.on('error', (error) => {
+        reject(error)
+      })
 
-  writeStream.on('finish', () => {
+      writeStream.on('error', (error) => {
+        reject(error)
+      })
+
+      writeStream.on('finish', () => {
+        resolve()
+      })
+    })
+
     console.log(`Copied file: ${sourcePath} -> ${targetPath}`)
-  })
-
-  readStream.pipe(writeStream)
+  } catch (error) {
+    console.log(`Error copying file: ${error.message}`)
+  }
 }
 
 function moveFile(sourcePath, targetPath) {
@@ -92,26 +120,29 @@ function moveFile(sourcePath, targetPath) {
   })
 
   writeStream.on('finish', () => {
-    try {
-      fs.unlinkSync(sourcePath)
-      console.log(`Moved file: ${sourcePath} -> ${targetPath}`)
-    } catch (error) {
-      console.log(`Error moving file: ${error.message}`)
-    }
+    fs.unlink(sourcePath, (error) => {
+      if (error) {
+        console.log(`Error moving file: ${error.message}`)
+      } else {
+        console.log(`Moved file: ${sourcePath} -> ${targetPath}`)
+      }
+    })
   })
 
   readStream.pipe(writeStream)
 }
 
-function deleteFile(filePath) {
+async function deleteFile(filePath) {
   try {
-    const exists = fs.existsSync(filePath)
-    if (!exists) {
-      console.log(`File does not exist: ${filePath}`)
-      return
-    }
-
-    fs.unlinkSync(filePath)
+    await new Promise((resolve, reject) => {
+      fs.unlink(filePath, (error) => {
+        if (error) {
+          reject(error)
+        } else {
+          resolve()
+        }
+      })
+    })
     console.log(`Deleted file: ${filePath}`)
   } catch (error) {
     console.log(`Error deleting file: ${error.message}`)
