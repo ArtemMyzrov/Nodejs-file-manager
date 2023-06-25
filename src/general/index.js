@@ -2,6 +2,7 @@ import readline from 'readline'
 import { handleCommand } from '../nwd/index.js'
 import { fsCommand } from '../fs/index.js'
 import { osCommand } from '../os/index.js'
+import { calculateHash } from '../hash/index.js'
 
 const args = process.argv.slice(2)
 const usernameArg = args.find((arg) => arg.startsWith('--username='))
@@ -25,6 +26,15 @@ rl.on('line', (input) => {
   } else if (input.startsWith('os ')) {
     const osInput = input.slice(3).trim()
     osCommand(osInput)
+  } else if (input.startsWith('hash ')) {
+    const filePath = input.slice(5).trim()
+    calculateHash(filePath)
+      .then((fileHash) => {
+        console.log(`Hash of ${filePath}: ${fileHash}`)
+      })
+      .catch((error) => {
+        console.log(`Error calculating hash: ${error}`)
+      })
   } else if (isFileSystemCommand(input)) {
     fsCommand(input)
   } else {
