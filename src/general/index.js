@@ -1,6 +1,7 @@
 import readline from 'readline'
 import { handleCommand } from '../nwd/index.js'
 import { fsCommand } from '../fs/index.js'
+import { osCommand } from '../os/index.js'
 
 const args = process.argv.slice(2)
 const usernameArg = args.find((arg) => arg.startsWith('--username='))
@@ -21,12 +22,13 @@ rl.on('line', (input) => {
 
   if (input === '.exit') {
     rl.close()
+  } else if (input.startsWith('os ')) {
+    const osInput = input.slice(3).trim()
+    osCommand(osInput)
+  } else if (isFileSystemCommand(input)) {
+    fsCommand(input)
   } else {
-    if (isFileSystemCommand(input)) {
-      fsCommand(input)
-    } else {
-      handleCommand(input)
-    }
+    handleCommand(input)
   }
 
   rl.prompt()
