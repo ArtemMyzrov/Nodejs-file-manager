@@ -3,6 +3,7 @@ import { handleCommand } from '../nwd/index.js'
 import { fsCommand } from '../fs/index.js'
 import { osCommand } from '../os/index.js'
 import { calculateHash } from '../hash/index.js'
+import { compressFile, decompressFile } from '../zip/index.js'
 
 const args = process.argv.slice(2)
 const usernameArg = args.find((arg) => arg.startsWith('--username='))
@@ -35,6 +36,14 @@ rl.on('line', (input) => {
       .catch((error) => {
         console.log(`Error calculating hash: ${error}`)
       })
+  } else if (input.startsWith('compress ')) {
+    const filePath = input.slice(9).trim()
+    const compressedFilePath = filePath + '.br'
+    compressFile(filePath, compressedFilePath)
+  } else if (input.startsWith('decompress ')) {
+    const filePath = input.slice(11).trim()
+    const decompressedFilePath = filePath.replace('.br', '')
+    decompressFile(filePath, decompressedFilePath)
   } else if (isFileSystemCommand(input)) {
     fsCommand(input)
   } else {
