@@ -1,41 +1,57 @@
 import fs from 'fs'
 import path from 'path'
 
-export function handleCommand(input) {
-  if (input === 'up') {
-    handleUp()
-  } else if (input.startsWith('cd')) {
-    handleCd(input)
-  } else if (input === 'ls') {
-    handleLs()
-  } else {
-    console.log(`Invalid input. ${input}`)
+export function nwdCommand(input) {
+  const command = input.split(' ')[0]
+
+  switch (command) {
+    case 'up':
+      handleUp()
+      break
+    case 'cd':
+      handleCd(input)
+      break
+    case 'ls':
+      handleLs()
+      break
+    default:
+      console.log(`Invalid input: ${input}`)
+      break
   }
 }
 
 export function handleUp() {
-  const currentDirectory = process.cwd()
-  const parentDirectory = path.dirname(currentDirectory)
+  try {
+    const currentDirectory = process.cwd()
+    const parentDirectory = path.dirname(currentDirectory)
 
-  if (currentDirectory === parentDirectory) {
-    console.log('You are already in the root folder.')
-  } else {
-    process.chdir(parentDirectory)
-    console.log(`Moved to parent directory: ${parentDirectory}`)
+    if (currentDirectory === parentDirectory) {
+      console.log('You are already in the root folder.')
+    } else {
+      process.chdir(parentDirectory)
+      console.log(`Moved to parent directory: ${parentDirectory}`)
+    }
+  } catch (error) {
+    console.log('Failed to change directory:', error.message)
   }
 }
 
 export function handleCd(input) {
-  const directoryPath = input.slice(3).trim()
-
   try {
-    fs.accessSync(directoryPath)
-    process.chdir(directoryPath)
-    console.log(`Moved to directory: ${directoryPath}`)
+    const directoryPath = input.slice(3).trim()
+
+    fs.access(directoryPath, (error) => {
+      if (error) {
+        console.log(
+          'Failed to change directory. Invalid path or directory does not exist.'
+        )
+      } else {
+        process.chdir(directoryPath)
+        console.log(`Moved to directory: ${directoryPath}`)
+      }
+    })
   } catch (error) {
-    console.log(
-      'Failed to change directory. Invalid path or directory does not exist.'
-    )
+    console.log('Failed to change directory:', error.message)
   }
 }
 
@@ -43,23 +59,37 @@ export function handleLs() {
   console.log('Directory contents:')
 
   try {
-    const contents = fs.readdirSync(process.cwd())
-    const items = []
+    fs.readdir(process.cwd(), (error, contents) => {
+      if (error) {
+        console.log('Operation failed. Please enter a valid command.')
+        return
+      }
 
-    contents.forEach((item, index) => {
-      const fullPath = `${process.cwd()}/${item}`
-      const stats = fs.statSync(fullPath)
-      const type = stats.isDirectory() ? 'Folder' : 'File'
+      const items = []
 
-      items.push({
-        Index: index + 1,
-        Name: item,
-        Type: type,
+      contents.forEach((item, index) => {
+        const fullPath = path.join(process.cwd(), item)
+        fs.stat(fullPath, (error, stats) => {
+          if (error) {
+            console.log('Operation failed. Please enter a valid command.')
+            return
+          }
+
+          const type = stats.isDirectory() ? 'Folder' : 'File'
+
+          items.push({
+            Index: index + 1,
+            Name: item,
+            Type: type,
+          })
+
+          if (items.length === contents.length) {
+            console.table(items)
+          }
+        })
       })
     })
-
-    console.table(items)
   } catch (error) {
-    console.log('Operation failed. Please enter a valid command.')
+    console.log('Operation failed:', error.message)
   }
 }
